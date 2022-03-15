@@ -45,7 +45,8 @@ sapply(package_list, citation)
 # Import Trait Table: this one has already corrected size corrected traits
 traits.raw =read.csv(file="traits.raw.csv", header=T)
 
-## SELECT ONLY NON-INVASIVE Species. If you activate this line, all subsequent analysis include only non-invasive species
+## SELECT ONLY NON-INVASIVE Species. 
+## If you activate this line, all subsequent analyses on functional and phylogenetic analysis (NOT species richness) include only non-invasive species
 #traits.raw<-subset(traits.raw, Invasive==2)
 
 # select traits for analysis
