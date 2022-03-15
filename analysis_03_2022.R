@@ -28,6 +28,9 @@ package_list <-
     "iNEXT"
     )
 
+# install all packages
+sapply(package_list, install.packages, character.only = TRUE)
+
 # load all packages
 sapply(package_list, library, character.only = TRUE)
 
@@ -730,9 +733,9 @@ mpd.nest$TreeN<-rownames(mpd.nest)
 mpd.forager$TreeN<-rownames(mpd.forager)
 
 #
-mpd.comm # both ns., primary forest more clustered, secondary forest overdispersed
-mpd.nest # ns primary forest more clustered, secondary forest clustered
-mpd.forager # ns, primary forest more clustered, secondary forest more overdispersed
+mpd.comm # both ns., primary forest slightly clustered, secondary forest rather overdispersed
+mpd.nest # both ns. primary forest more clustered, secondary forest random (p=0.52)
+mpd.forager # # both ns., primary forest slightly clustered, secondary forest rather overdispersed
 
 ## functional diversity for ALL
 traits_comm<-traits.comm.mat %>%
@@ -832,6 +835,7 @@ ses.mpd.phylo.full$TreeN<-rownames(ses.mpd.phylo.full)
 ses.mpd.phylo.nest$TreeN<-rownames(ses.mpd.phylo.nest)
 ses.mpd.phylo.forager$TreeN<-rownames(ses.mpd.phylo.forager)
 #
-ses.mpd.phylo.full # ns, primary overdispersed, secondary clustered
-ses.mpd.phylo.nest # Primary nester ns, secondary ns. clustered
-ses.mpd.phylo.forager  # Primary forager ns overdispersed, secondary ns clustered
+ses.mpd.phylo.full # both ns, primary ramndom, secondary rather clustered
+ses.mpd.phylo.nest # # both ns, primary slightly clustered, secondary random (opposite to full and forager
+#but fits with Nichola chapter, correlation of observed PD and SES of PD not always the case for two datapoints)
+ses.mpd.phylo.forager  # # both ns, primary ramndom, secondary rather clustered
