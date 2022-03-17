@@ -30,7 +30,7 @@ package_list <-
     )
 
 # install all packages
-sapply(package_list, install.packages, character.only = TRUE)
+#sapply(package_list, install.packages, character.only = TRUE)
 
 # load all packages
 sapply(package_list, library, character.only = TRUE)
@@ -229,7 +229,7 @@ traits.nestcomm.mat<-merge(finaltraitmatrix, t.nestcomm.mat, by.x = 0, by.y= 0)
 traits.fcomm.mat<-merge(finaltraitmatrix, t.fcomm.mat, by.x = 0, by.y= 0)
 
 
-##### functional diversity (FDis, FEve, etc.)
+##### functional diversity (SES mpd, CWMs)
 ### 1. for complete community
 traits_comm<-traits.comm.mat[, c(1:11)]
 rownames(traits_comm) <- traits_comm[, 1]
@@ -336,8 +336,8 @@ t.abun_forager <- t(abun_foragers)
 
 # SES MPD
 multi.dis.f <- gowdis(traits_foragers[,-c(11,12)], w=c(1,0.3,1,1,1,1,1,1,1,1)) # gower distance matrix
-mpd.f <- ses.mpd(t.abun_forager, multi.dis.f, null.model = "taxa.labels", abundance.weighted = T, runs = 999) #full abundance weighted
-mpd.f$TreeN<-rownames(mpd.f)
+mpd.foragers <- ses.mpd(t.abun_forager, multi.dis.f, null.model = "taxa.labels", abundance.weighted = T, runs = 999) #full abundance weighted
+mpd.foragers$TreeN<-rownames(mpd.foragers)
 
 # CHECK: names equal?
 rownames(traits_foragers) == rownames(abun_foragers)
@@ -400,7 +400,7 @@ mpd.f$TreeN<-rownames(mpd.f)
 #
 mpd_comm<-mpd.full[,c(6,9)]
 mpd_nest<-mpd.nest[,c(6,9)]
-mpd_forager<-mpd.f[,c(6,9)]
+mpd_forager<-mpd.foragers[,c(6,9)]
 #
 mpd_comm$Type<-"all"
 mpd_nest$Type<-"nest"
@@ -424,35 +424,37 @@ pd_env<-pd_env%>% drop_na(Type)
 
 mpd_p1<-ggplot(mpd_env, aes(x=Type, y=mpd.obs.z, fill=Forest))+
   ggtitle("Trait diversity") +
+  geom_abline(intercept = 0, slope = 0, color="red", 
+              linetype="dashed", size=1)+
   geom_boxplot()+
-  geom_abline(intercept = 1.8, slope = 0, color="red", 
-              linetype="dashed", size=1)+
-  geom_abline(intercept = -1.6, slope = 0, color="red", 
-              linetype="dashed", size=1)+
   scale_x_discrete(labels=c("all" = "All", "foragers" = "Visitors",
                             "nest" = "Nesters"))+           
   scale_fill_manual(values=c("darkgrey", "lightgrey"))+
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   #ylim(-3, 3)+
   ylab("SES Rao Q")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 mpd_p1
 
 ## Phylogenetic Diversity
 mpd_p2<-ggplot(pd_env, aes(x=Type, y=mpd.obs.z, fill=Forest)) +
   ggtitle("Phylogenetic Diversity") +
   scale_x_discrete(labels=c("all" = "All", "foragers" = "Visitors",
-                            "nest" = "Nesters"))+           
+                            "nest" = "Nesters"))+   
+  geom_abline(intercept = 0, slope = 0, color="red", 
+              linetype="dashed", size=1)+
   geom_boxplot()+
-  geom_abline(intercept = 1.6, slope = 0, color="red", 
-              linetype="dashed", size=1)+
-  geom_abline(intercept = -1.8, slope = 0, color="red", 
-              linetype="dashed", size=1)+
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   scale_fill_manual(values=c("darkgrey", "lightgrey"))+
   #ylim(-3, 3)+
   ylab("SES Rao Q")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 mpd_p2
 
 ## Species Richness
@@ -481,7 +483,10 @@ richness<-ggplot(all_r, aes(x=Type, y=richness, fill=Forest)) +
                             "nest" = "Nesters"))+           
   scale_fill_manual(values=c("darkgrey", "lightgrey"))+
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 richness
 
 #### Community Weighted Means 
@@ -495,7 +500,10 @@ HL<-ggplot(fd_env, aes(x=Type, y=HL, fill=Forest)) +
                             "nest" = "Nesters"))+           
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   ylab("")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 HL
 
 poly.index<-ggplot(fd_env, aes(x=Type, y=poly.index, fill=Forest)) +
@@ -506,7 +514,10 @@ poly.index<-ggplot(fd_env, aes(x=Type, y=poly.index, fill=Forest)) +
                             "nest" = "Nesters"))+         
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   ylab("")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 poly.index
 
 Spines<-ggplot(fd_env, aes(x=Type, y=Spines, fill=Forest)) +
@@ -517,7 +528,10 @@ Spines<-ggplot(fd_env, aes(x=Type, y=Spines, fill=Forest)) +
                             "nest" = "Nesters"))+           
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   ylab("")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 Spines
 
 Scul<-ggplot(fd_env, aes(x=Type, y=Scul, fill=Forest)) +
@@ -528,7 +542,10 @@ Scul<-ggplot(fd_env, aes(x=Type, y=Scul, fill=Forest)) +
                             "nest" = "Nesters"))+           
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   ylab("")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 Scul
 
 Rel.HW<-ggplot(fd_env, aes(x=Type, y=Rel.HW, fill=Forest)) +
@@ -539,7 +556,10 @@ Rel.HW<-ggplot(fd_env, aes(x=Type, y=Rel.HW, fill=Forest)) +
                             "nest" = "Nesters"))+           
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   ylab("")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 Rel.HW
 
 Rel.CL<-ggplot(fd_env, aes(x=Type, y=Rel.CL, fill=Forest)) +
@@ -550,7 +570,10 @@ Rel.CL<-ggplot(fd_env, aes(x=Type, y=Rel.CL, fill=Forest)) +
                             "nest" = "Nesters"))+           
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   ylab("")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
+
 Rel.CL
 
 Rel.ML<-ggplot(fd_env, aes(x=Type, y=Rel.ML, fill=Forest)) +
@@ -559,9 +582,11 @@ Rel.ML<-ggplot(fd_env, aes(x=Type, y=Rel.ML, fill=Forest)) +
   scale_fill_manual(values=c("darkgrey", "lightgrey"))+
   scale_x_discrete(labels=c("all" = "All", "foragers" = "Visitors",
                             "nest" = "Nesters"))+           
-  ylab("")+
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
-  theme_bw()
+  ylab("")+
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
 Rel.ML
 
 Rel.EP<-ggplot(fd_env, aes(x=Type, y=Rel.EP, fill=Forest)) +
@@ -570,9 +595,11 @@ Rel.EP<-ggplot(fd_env, aes(x=Type, y=Rel.EP, fill=Forest)) +
   scale_fill_manual(values=c("darkgrey", "lightgrey"))+
   scale_x_discrete(labels=c("all" = "All", "foragers" = "Visitors",
                             "nest" = "Nesters"))+           
-  ylab("")+
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
-  theme_bw()
+  ylab("")+
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
 Rel.EP
 
 Rel.ES<-ggplot(fd_env, aes(x=Type, y=Rel.ES, fill=Forest)) +
@@ -581,9 +608,11 @@ Rel.ES<-ggplot(fd_env, aes(x=Type, y=Rel.ES, fill=Forest)) +
   geom_boxplot()+
   scale_x_discrete(labels=c("all" = "All", "foragers" = "Visitors",
                             "nest" = "Nesters"))+    
-  ylab("")+
   scale_fill_manual(values=c("darkgrey", "lightgrey"))+
-  theme_bw()
+  ylab("")+
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
 Rel.ES
 
 Rel.LL<-ggplot(fd_env, aes(x=Type, y=Rel.LL, fill=Forest)) +
@@ -594,7 +623,9 @@ Rel.LL<-ggplot(fd_env, aes(x=Type, y=Rel.LL, fill=Forest)) +
                             "nest" = "Nesters"))+         
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
   ylab("")+
-  theme_bw()
+  xlab("")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size=12))
 Rel.LL
 
 ## Plot 1
@@ -726,18 +757,18 @@ multi.dis.n <- gowdis(traits.nestcomm.mat[,-c(11,12)], w=c(1,0.3,1,1,1,1,1,1,1,1
 multi.dis.f <- gowdis(traits.fcomm.mat[,-c(11,12)], w=c(1,0.3,1,1,1,1,1,1,1,1)) # gower distance matrix
 
 # SES MPD Traits
-mpd.comm <- ses.mpd(com.mat2, multi.dis.c, null.model = "taxa.labels", abundance.weighted = T, runs = 999) #full abundance weighted
-mpd.nest <- ses.mpd(nestcom.mat2, multi.dis.n, null.model = "taxa.labels", abundance.weighted = T, runs = 999) #nest abundance weighted
-mpd.forager<-ses.mpd(fcom.mat2, multi.dis.f, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+mpd.comm.p <- ses.mpd(com.mat2, multi.dis.c, null.model = "taxa.labels", abundance.weighted = T, runs = 999) #full abundance weighted
+mpd.nest.p <- ses.mpd(nestcom.mat2, multi.dis.n, null.model = "taxa.labels", abundance.weighted = T, runs = 999) #nest abundance weighted
+mpd.forager.p<-ses.mpd(fcom.mat2, multi.dis.f, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
 #
-mpd.comm$TreeN<-rownames(mpd.comm)
-mpd.nest$TreeN<-rownames(mpd.nest)
-mpd.forager$TreeN<-rownames(mpd.forager)
+mpd.comm.p$TreeN<-rownames(mpd.comm.p)
+mpd.nest.p$TreeN<-rownames(mpd.nest.p)
+mpd.forager.p$TreeN<-rownames(mpd.forager.p)
 
 #
-mpd.comm # both ns., primary forest slightly clustered, secondary forest rather overdispersed
-mpd.nest # both ns. primary forest more clustered, secondary forest random (p=0.52)
-mpd.forager # # both ns., primary forest slightly clustered, secondary forest rather overdispersed
+mpd.comm.p # both ns., primary forest slightly clustered, secondary forest rather overdispersed
+mpd.nest.p # both ns. primary forest more clustered, secondary forest random (p=0.52)
+mpd.forager.p # # both ns., primary forest slightly clustered, secondary forest rather overdispersed
 
 ## functional diversity for ALL
 traits_comm<-traits.comm.mat %>%
@@ -762,11 +793,11 @@ comm <- dbFD(traits_comm, t(abun_comm),
 )
 
 # Extract FD-Indices
-CWM_comm <- as.data.frame(comm$CWM)
+CWM_comm.p <- as.data.frame(comm$CWM)
 
 # Rename values
-CWM_comm$TreeN <- rownames(CWM_comm)
-rownames(CWM_comm) <- NULL
+CWM_comm.p$TreeN <- rownames(CWM_comm.p)
+rownames(CWM_comm.p) <- NULL
 
 ### functional diversity FOR NESTS
 traits_nest<-traits.nestcomm.mat %>%
@@ -790,10 +821,10 @@ nest <- dbFD(traits_nest, t.abun_nest,
              clust.type = "ward")
 
 # Extract FD-Indices
-CWM_nest <- as.data.frame(nest$CWM)
+CWM_nest.p <- as.data.frame(nest$CWM)
 # 
-CWM_nest$plot_type <- rownames(CWM_nest)
-rownames(CWM_nest) <- NULL
+CWM_nest.p$plot_type <- rownames(CWM_nest.p)
+rownames(CWM_nest.p) <- NULL
 
 ### functional diversity FOR FORAGERS
 traits_fcomm<-traits.fcomm.mat %>%
@@ -817,10 +848,10 @@ fcomm <- dbFD(traits_fcomm, t.abun_fcomm,
               clust.type = "ward"
 )
 # Extract FD-Indices
-CWM_foragers <- as.data.frame(fcomm$CWM)
+CWM_foragers.p <- as.data.frame(fcomm$CWM)
 # Rename values
-CWM_foragers$plot_type <- rownames(CWM_foragers)
-rownames(CWM_foragers) <- NULL
+CWM_foragers.p$plot_type <- rownames(CWM_foragers.p)
+rownames(CWM_foragers.p) <- NULL
 
 ###### Phylogenetic PLOT SCALE
 
@@ -829,15 +860,29 @@ read.csv("newphylodist.csv", row.names = 1) -> phylo.matrix #outgroups removed
 phy.dis <- (sqrt(as.dist(phylo.matrix))) # SQRT transform as advised by Letten&Cornwell 2015 MEE
 
 #mpd compared with a null model for SES
-ses.mpd.phylo.full <- ses.mpd(t.abun_comm, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
-ses.mpd.phylo.nest <- ses.mpd(t.abun_nest, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
-ses.mpd.phylo.forager <- ses.mpd(t.abun_fcomm, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+ses.mpd.phylo.full.p <- ses.mpd(t.abun_comm, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+ses.mpd.phylo.nest.p <- ses.mpd(t.abun_nest, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+ses.mpd.phylo.forager.p <- ses.mpd(t.abun_fcomm, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
 #
-ses.mpd.phylo.full$TreeN<-rownames(ses.mpd.phylo.full)
-ses.mpd.phylo.nest$TreeN<-rownames(ses.mpd.phylo.nest)
-ses.mpd.phylo.forager$TreeN<-rownames(ses.mpd.phylo.forager)
+ses.mpd.phylo.full.p$TreeN<-rownames(ses.mpd.phylo.full.p)
+ses.mpd.phylo.nest.p$TreeN<-rownames(ses.mpd.phylo.nest.p)
+ses.mpd.phylo.forager.p$TreeN<-rownames(ses.mpd.phylo.forager.p)
 #
-ses.mpd.phylo.full # both ns, primary ramndom, secondary rather clustered
-ses.mpd.phylo.nest # # both ns, primary slightly clustered, secondary random (opposite to full and forager
+ses.mpd.phylo.full.p # both ns, primary ramndom, secondary rather clustered
+ses.mpd.phylo.nest.p # # both ns, primary slightly clustered, secondary random (opposite to full and forager
 #but fits with Nichola chapter, correlation of observed PD and SES of PD not always the case for two datapoints)
-ses.mpd.phylo.forager  # # both ns, primary ramndom, secondary rather clustered
+ses.mpd.phylo.forager.p  # # both ns, primary ramndom, secondary rather clustered
+
+
+###### REMOVE LATER: Export figures ######
+
+# Figure 1: richness + trait diversity + phylogenetic diversity
+tiff("figure_1.tiff", units = "in", width = 10, height = 4, res = 150)
+plot1
+dev.off()
+
+# Figure 2: CWMs
+tiff("figure_2.tiff", units = "in", width = 16, height = 8, res = 150)
+figure_traits
+dev.off()
+
