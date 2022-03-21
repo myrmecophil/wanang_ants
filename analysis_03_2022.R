@@ -868,21 +868,28 @@ ses.mpd.phylo.full.p$TreeN<-rownames(ses.mpd.phylo.full.p)
 ses.mpd.phylo.nest.p$TreeN<-rownames(ses.mpd.phylo.nest.p)
 ses.mpd.phylo.forager.p$TreeN<-rownames(ses.mpd.phylo.forager.p)
 #
-ses.mpd.phylo.full.p # both ns, primary ramndom, secondary rather clustered
+ses.mpd.phylo.full.p # both ns, primary random, secondary rather clustered
 ses.mpd.phylo.nest.p # # both ns, primary slightly clustered, secondary random (opposite to full and forager
-#but fits with Nichola chapter, correlation of observed PD and SES of PD not always the case for two datapoints)
-ses.mpd.phylo.forager.p  # # both ns, primary ramndom, secondary rather clustered
+ses.mpd.phylo.forager.p  #  both ns, primary random, secondary rather clustered
 
 
 ###### REMOVE LATER: Export figures ######
+library(svglite)
 
 # Figure 1: richness + trait diversity + phylogenetic diversity
-tiff("figure_1.tiff", units = "in", width = 10, height = 4, res = 150)
+# as tiff
+tiff("figure_1.tiff", units ="in", width = 10, height = 4)
 plot1
 dev.off()
 
+# or as .svg (vector image)
+ggsave(file="figure_1.svg", plot=plot1, width=10, height=4)
+
 # Figure 2: CWMs
+# as tiff
 tiff("figure_2.tiff", units = "in", width = 16, height = 8, res = 150)
 figure_traits
 dev.off()
 
+# or as .svg (vector image)
+ggsave(file="figure_2.svg", plot=figure_traits, width=16, height=8)
