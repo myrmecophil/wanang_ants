@@ -47,7 +47,7 @@ sapply(package_list, citation)
 traits.raw =read.csv(file="traits.raw.csv", header=T)
 
 ## SELECT ONLY NON-INVASIVE Species. 
-## If you activate this line, all subsequent analyses on functional and phylogenetic analysis (NOT species richness) include only non-invasive species
+## If you activate this line, all subsequent analyses except accumulation curves and species composition include only non-invasive species
 #traits.raw<-subset(traits.raw, Invasive==2)
 
 # select traits for analysis
@@ -256,7 +256,7 @@ mpd.full$TreeN<-rownames(mpd.full)
 rownames(traits_comm) == rownames(abun_comm)
 
 # Create functional diversity indices for each plotmethod
-comm <- dbFD(traits_comm, t(abun_comm),
+c <- dbFD(traits_comm, t(abun_comm),
              # different weight for categorical trait Sculpture
              w= c(1,0.33, 1, 1, 1, 1, 1, 1, 1, 1),
              corr = "cailliez",
@@ -266,7 +266,7 @@ comm <- dbFD(traits_comm, t(abun_comm),
 )
 
 # Extract CWMs
-CWM_comm <- as.data.frame(comm$CWM)
+CWM_comm <- as.data.frame(c$CWM)
 #
 CWM_comm$TreeN <- rownames(CWM_comm)
 rownames(CWM_comm) <- NULL
@@ -457,29 +457,56 @@ mpd_p2<-ggplot(pd_env, aes(x=Type, y=mpd.obs.z, fill=Forest)) +
 
 mpd_p2
 
+
 ## Species Richness
-all_richness<-comm.mat.env %>% select(TreeN, Forest, AntSpRichness.ALL, AntSpRichness.Nests)
-all_richness$AntSpRichness.Forager<-all_richness$AntSpRichness.ALL-all_richness$AntSpRichness.Nests
 
-full_richness<-all_richness[,-c(4,5)]
-full_richness$Type <- "all"
-colnames(full_richness)[colnames(full_richness) == "AntSpRichness.ALL"] <- "richness"
+# merge with trait data to remove species without trait data
+t.comm = t(comm)
+colnames(t.comm)<-t.comm[1,]
+t.comm<-t.comm[-1,]
 
-n_richness<-all_richness[,-c(3,5)]
-n_richness$Type <- "nest"
-colnames(n_richness)[colnames(n_richness) == "AntSpRichness.Nests"] <- "richness"
+t.nestcomm = t(nestcomm)
+t.fcomm = t(fcomm)
+#
+traits.comm<-merge(finaltraitmatrix, t.comm, by.x = 0, by.y= 0)
+traits.nestcomm<-merge(finaltraitmatrix, t.nestcomm, by.x = 0, by.y= 0)
+traits.fcomm<-merge(finaltraitmatrix, t.fcomm, by.x = 0, by.y= 0)
+#
+abun_comm2<-traits.comm[, -c(2:11)]
+rownames(abun_comm2) <- abun_comm2[, 1]
+abun_comm2 <- abun_comm2[, -c(1)]
+t.abuncomm2<-t(abun_comm2)
+#
+nest_comm2<-traits.nestcomm[, -c(2:11)]
+rownames(nest_comm2) <- nest_comm2[, 1]
+nest_comm2 <- nest_comm2[, -c(1)]
+t.nest_comm2<-t(nest_comm2)
+#
+f_comm2<-traits.fcomm[, -c(2:11)]
+rownames(f_comm2) <- f_comm2[, 1]
+f_comm2 <- f_comm2[, -c(1)]
+t.f_comm2<-t(f_comm2)
 
-f_richness<-all_richness[,-c(3,4)]
-f_richness$Type <- "foragers"
-colnames(f_richness)[colnames(f_richness) == "AntSpRichness.Forager"] <- "richness"
+#
+forest_c<-env %>% select(TreeN, Forest)
+forest_c$Richness <- specnumber(t.abuncomm2)
+forest_c$Type<-"all"
+#
+forest_n<-env %>% select(TreeN, Forest)
+forest_n$Richness <- specnumber(t.nest_comm2)
+forest_n$Type<-"nest"
+#
+forest_f<-env %>% select(TreeN, Forest)
+forest_f$Richness <- specnumber(t.f_comm2)
+forest_f$Type<-"forager"
 
-all_r<-rbind(full_richness,n_richness, f_richness)
+all_r<-rbind(forest_c,forest_n, forest_f)
 
 ####
-richness<-ggplot(all_r, aes(x=Type, y=richness, fill=Forest)) +
+richness<-ggplot(all_r, aes(x=Type, y=Richness, fill=Forest)) +
   ggtitle("Species richness") +
   geom_boxplot()+
-  scale_x_discrete(labels=c("all" = "All", "foragers" = "Visitors",
+  scale_x_discrete(labels=c("all" = "All", "forager" = "Visitors",
                             "nest" = "Nesters"))+           
   scale_fill_manual(values=c("darkgrey", "lightgrey"))+
   stat_compare_means(method = "kruskal.test", paired=F, label = "p.signif")+
@@ -629,7 +656,7 @@ Rel.LL<-ggplot(fd_env, aes(x=Type, y=Rel.LL, fill=Forest)) +
 Rel.LL
 
 ## Plot 1
-plot1<-ggarrange(richness, mpd_p1, mpd_p2,
+plot1 <- ggarrange(richness, mpd_p1, mpd_p2,
                  labels = c("A", "B", "C"),
                  ncol = 3, nrow = 1, common.legend = TRUE, legend = "top"
 )
