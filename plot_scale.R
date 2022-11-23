@@ -1,3 +1,8 @@
+## Changelog Phil 11/2/2022:
+# - changed deprecated dplyr code
+# - removed downweighting trait in gowdis
+# - added decouple
+
 ## Arboreal ant communities Wanang 2022- Plot scale Script
 
 # In this script, we compare the functional and phylogenetic diversity of two plots, one in primary and one secondary forest.
@@ -37,6 +42,8 @@ sapply(package_list, library, character.only = TRUE)
 # Citations
 sapply(package_list, citation)
 
+# set seed for randomization
+set.seed(123)
 
 #----------------------------------------------------------#
 # Trait raw data transformation -----
@@ -45,9 +52,24 @@ sapply(package_list, citation)
 # Import Trait Table: this one has already corrected size corrected traits
 traits.raw =read.csv(file="traits.raw.csv", header=T)
 
-## SELECT TO REMOVE INVASIVE Species. 
-## If you activate this line, all subsequent analyses except species composition include only non-invasive species
+## load phylogenetic data
+phylo.matrix <- read.csv("newphylodist.csv", row.names = 1) #outgroups removed
+
+
+#### ACTIVATE CODE TO REMOVE NON-NATIVE SPECIES ###
+#remove invasives
+#traits.raw =read.csv(file="traits.raw.csv", header=T)
+#invasiv<-subset(traits.raw, Invasive==1)
+#invasiv <- invasiv %>%
+#  dplyr::select(SpCode)%>%
+#  mutate(SpCode = str_remove_all(SpCode, " "))
+#remove<-invasiv[,1]
+#phylo.matrix<-phylo.matrix[!rownames(phylo.matrix) %in% remove,!colnames(phylo.matrix) %in% remove ]
+
+## If you activate this line, all subsequent analyses include only native species
 #traits.raw<-subset(traits.raw, Invasive==2)
+
+### END OF CODE FoR INVASIVE EXcLUSION ##
 
 # select traits for analysis
 traits.raw <- traits.raw %>%
@@ -61,12 +83,13 @@ traits.raw$LegLength <- traits.raw$HindTibia+traits.raw$HindFemur
 # Eye Size is calculated as the area of an ellipse
 traits.raw$EyeSize <- ((traits.raw$EyeWidth)/2)*((traits.raw$EyeLength)/2)*3.142
 
-
+#
 traits_all<-traits.raw %>%
   # define relative measurements by dividing through HeadLength for size related traits
-  mutate_at(.funs = funs(rel = ./HeadLength), 
+  mutate_at(.funs = list(rel = ~./HeadLength), 
             .vars = vars(HeadWidth, ClypeusLength:InterocularDistance, LegLength, EyeSize))%>%
   select(SpCode,Caste, Spinosity:EyeSize_rel, HeadLength)
+
 
 # For polymorphic species: weights for mean trait calculations: 0.8 minor, 0.2 major
 traits_all$weights[traits_all$Caste == "minor"] <- 0.8
@@ -108,8 +131,26 @@ finaltraitmatrix<-as.data.frame(traitmatrix)
 rownames(finaltraitmatrix) <- finaltraitmatrix[, 1]
 finaltraitmatrix <- finaltraitmatrix[, -c(1)]
 
+# log all traits for better data distribution
+#finaltraitmatrix<-finaltraitmatrix %>%
+#  mutate_at(.funs = ~log(.x+1), 
+#            .vars = vars(Spines:poly.index))
+
 ## load environmental data
 env<- read.csv("env.csv")
+
+# # SQRT transform phylogeny as advised by Letten&Cornwell 2015 MEE
+phy.dis <- (sqrt(as.dist(phylo.matrix))) 
+
+# transform phylogenetic distance into phylo format
+phylo<-as.phylo(hclust(phy.dis))
+
+# remove species without phylogenetic info (Lordomyrma 001) from trait matrix
+remove2<-"LORD001"
+finaltraitmatrix.p<-finaltraitmatrix[!rownames(finaltraitmatrix) %in% remove2,]
+
+# decouple traits and phylogeny according to de Bello et al. 2017
+d1 <- decouple(finaltraitmatrix.p, phylo, sqrt_tree = FALSE)
 
 #----------------------------------------------------------#
 # Plot SCALE: formatting and uploading occurrences  -----
@@ -236,9 +277,9 @@ fcom.mat2<-traits.fcomm.mat%>%
 fcom.mat2<-t(fcom.mat2)
 
 # calculate functional dendrograms
-multi.dis.c <- gowdis(traits.comm.mat[,-c(11,12)], w=c(1,0.3,1,1,1,1,1,1,1,1)) # gower distance matrix
-multi.dis.n <- gowdis(traits.nestcomm.mat[,-c(11,12)], w=c(1,0.3,1,1,1,1,1,1,1,1)) # gower distance matrix
-multi.dis.f <- gowdis(traits.fcomm.mat[,-c(11,12)], w=c(1,0.3,1,1,1,1,1,1,1,1)) # gower distance matrix
+multi.dis.c <- gowdis(traits.comm.mat[,-c(11,12)]) # gower distance matrix
+multi.dis.n <- gowdis(traits.nestcomm.mat[,-c(11,12)]) # gower distance matrix
+multi.dis.f <- gowdis(traits.fcomm.mat[,-c(11,12)]) # gower distance matrix
 
 # calculate SES Rao Q for traits
 mpd.comm.p <- ses.mpd(com.mat2, multi.dis.c, null.model = "taxa.labels", abundance.weighted = T, runs = 999) #full abundance weighted
@@ -252,6 +293,22 @@ mpd.forager.p$TreeN<-rownames(mpd.forager.p)
 mpd.comm.p # both ns., primary forest slightly clustered, secondary forest rather overdispersed
 mpd.nest.p # both ns. primary forest more clustered, secondary forest random (p=0.52)
 mpd.forager.p # # both ns., primary forest slightly clustered, secondary forest rather overdispersed
+
+# Same calculations for decoupled trait matrix
+dcFDis<-d1$dcFdist
+
+#Rao Q SES
+dcFDis.full <- ses.mpd(com.mat2, dcFDis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+dcFDis.nest <- ses.mpd(nestcom.mat2, dcFDis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+dcFDis.forager <- ses.mpd(fcom.mat2, dcFDis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+#
+dcFDis.full$TreeN<-rownames(dcFDis.full)
+dcFDis.nest$TreeN<-rownames(dcFDis.nest)
+dcFDis.forager$TreeN<-rownames(dcFDis.forager)
+#
+dcFDis.full #  ns.
+dcFDis.nest #  ns.
+dcFDis.forager # ns.
 
 ## 1. whole commmunity CWMs
 traits_comm<-traits.comm.mat %>%
@@ -267,8 +324,6 @@ rownames(traits_comm) == rownames(abun_comm)
 
 # Calculate community weighted means for whole plot
 comm <- dbFD(traits_comm, t(abun_comm),
-             # different weight for categorical trait Sculpture
-             w= c(1,0.3, 1, 1, 1, 1, 1, 1, 1, 1),
              corr = "cailliez",
              calc.FGR = F,
              calc.FRic= F,
@@ -298,8 +353,6 @@ rownames(traits_nest) == colnames(t.abun_nest)
 
 # Create functional diversity indices for each plotmethod
 nest <- dbFD(traits_nest, t.abun_nest,
-             # different weight for categorical trait Sculpture
-             w= c(1,0.33, 1, 1, 1, 1, 1, 1, 1, 1),
              corr = "cailliez",
              calc.FGR = F, 
              calc.FRic = F,
@@ -327,8 +380,6 @@ rownames(traits_fcomm) == colnames(t.abun_fcomm)
 
 # Create functional diversity indices for each plotmethod
 fcomm <- dbFD(traits_fcomm, t.abun_fcomm,
-              # different weight for categorical trait Sculpture
-              w= c(1,0.3, 1, 1, 1, 1, 1, 1, 1, 1),
               corr = "cailliez",
               calc.FGR = F,
               calc.FRic= F,
@@ -349,8 +400,6 @@ CWM_foragers.p
 # We do this three times: 1. complete community 2. for nesting community 3. for foraging community
 
 # Phylogenetic SES RaoQ
-phylo.matrix <- read.csv("newphylodist.csv", row.names = 1) #outgroups removed
-phy.dis <- (sqrt(as.dist(phylo.matrix))) # SQRT transform as advised by Letten&Cornwell 2015 MEE
 
 # Rao Q compared with a null model for SES
 ses.mpd.phylo.full.p <- ses.mpd(t.abun_comm, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
@@ -365,6 +414,22 @@ ses.mpd.phylo.full.p # both ns, primary random, secondary rather clustered
 ses.mpd.phylo.nest.p # # both ns, primary slightly clustered, secondary random
 ses.mpd.phylo.forager.p  #  both ns, primary random, secondary rather clustered
 
+# same for decoupled phylogeny
+# 
+dcPDis<-d1$dcPdist
+
+#Rao Q SES
+dcPDis.full <- ses.mpd(t.abun_comm, dcPDis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+dcPDis.nest <- ses.mpd(t.abun_nest, dcPDis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+dcPDis.forager <- ses.mpd(t.abun_fcomm, dcPDis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
+#
+dcPDis.full$TreeN<-rownames(dcPDis.full)
+dcPDis.nest$TreeN<-rownames(dcPDis.nest)
+dcPDis.forager$TreeN<-rownames(dcPDis.forager)
+#
+dcPDis.full # ns
+dcPDis.nest # ns
+dcPDis.forager # ns
 
 #----------------------------------------------------------#
 # Species richness  -----
