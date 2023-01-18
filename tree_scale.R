@@ -394,6 +394,8 @@ mpd_all2<-full_join(mpd_all, mpd_forager)
 mpd_env<- full_join(env,mpd_all2, by="TreeN")
 
 # Is FD different from 0?
+# PK: for these all tests perhaps better to use pne-sample Wilcoxon’s signed-rank test as in 
+#Insect Conservation and Diversity (2018) doi: 10.1111/icad.12326?
 # primary all ***
 mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
 t.test(mpd.z, alternative="two.sided")
