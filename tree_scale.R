@@ -396,33 +396,33 @@ mpd_env<- full_join(env,mpd_all2, by="TreeN")
 # Is FD different from 0?
 # primary all ***
 mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes;t = -11.127, df = 382, p-value < 2.2e-16
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes;V = 15545, p-value < 2.2e-16
 
 # primary foragers ***
 mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes ;t = -7.4056, df = 283, p-value = 1.505e-12
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes ;V = 10497, p-value = 2.016e-12
 
 # primary nester ***
 mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -5.749, df = 172, p-value = 4.009e-08
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 3846, p-value = 2.451e-08
 
-# secondary all, ns
+# secondary all, *
 mpd.z<-mpd_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = 1.0253, df = 278, p-value = 0.3061
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# kinda; V = 22205, p-value = 0.0474
 
 # secondary forager, ns
 mpd.z<-mpd_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = 1.3286, df = 190, p-value = 0.1856
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# no; V = 10032, p-value = 0.259
 
 # secondary nester, ns
 mpd.z<-mpd_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = -0.78796, df = 135, p-value = 0.4321
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# no; V = 4514, p-value = 0.7553
 
 
 # Here we calculate the decoupled functional diversity, i.e. Rao Q, according to de Bello et al. (2017)
