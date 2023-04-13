@@ -1,9 +1,5 @@
-## Changelog Phil 11/23/2022:
-# - changed deprecated dplyr code
-# - removed downweighting trait in gowdis
-# - added decouple
-# - added Bloombergs K
-# - added PD and FD correlations
+## Changelog Phil 04/13/2023:
+# - added tree size vs. PD and FD
 
 
 ## Arboreal ant communities Wanang 2022- Tree scale Script
@@ -394,33 +390,33 @@ mpd_all2<-full_join(mpd_all, mpd_forager)
 mpd_env<- full_join(env,mpd_all2, by="TreeN")
 
 # Is FD different from 0?
-# PK: for these all tests perhaps better to use pne-sample Wilcoxon’s signed-rank test as in 
-#Insect Conservation and Diversity (2018) doi: 10.1111/icad.12326?
+# one-sample Wilcoxons signed-rank test as in 
 # http://www.sthda.com/english/wiki/one-sample-wilcoxon-signed-rank-test-in-r
+
 # primary all ***
 mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
 wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
 # yes;V = 15545, p-value < 2.2e-16
-
-# primary foragers ***
-mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
-wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
-# yes ;V = 10497, p-value = 2.016e-12
-
-# primary nester ***
-mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
-wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
-# yes; V = 3846, p-value = 2.451e-08
 
 # secondary all, *
 mpd.z<-mpd_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
 wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
 # kinda; V = 22205, p-value = 0.0474
 
+# primary foragers ***
+mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes ;V = 10497, p-value = 2.016e-12
+
 # secondary forager, ns
 mpd.z<-mpd_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
 wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
 # no; V = 10032, p-value = 0.259
+
+# primary nester ***
+mpd.z<-mpd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 3846, p-value = 2.451e-08
 
 # secondary nester, ns
 mpd.z<-mpd_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
@@ -431,7 +427,7 @@ wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
 # Here we calculate the decoupled functional diversity, i.e. Rao Q, according to de Bello et al. (2017)
 # We do this three times: 1. complete community 2. for nesting community 3. for foraging community
 
-# function 'decouple' from de Bello et a. (2017)
+# function 'decouple' from de Bello et al. (2017)
 d1 <- decouple(finaltraitmatrix.p, phylo, sqrt_tree = FALSE)
 
 # extract decoupled phylogeny
@@ -459,40 +455,41 @@ dcFDis_all <- full_join(dcFDis_comm, dcFDis_nest)
 dcFDis_all2<-full_join(dcFDis_all, dcFDis_forager)
 #
 dcFDis_env<- full_join(env,dcFDis_all2, by="TreeN")
-
 # 
 dcFDis_env<-dcFDis_env%>% drop_na(Type)
 
+
 # Is decoupled FD different from 0?
+
 # primary all ***
 mpd.z<-dcFDis_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes;t = -7.4309, df = 382, p-value = 7.133e-13
-
-# primary foragers ***
-mpd.z<-dcFDis_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes ;t = -2.9212, df = 283, p-value = 0.003768
-
-# primary nester ***
-mpd.z<-dcFDis_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -5.3582, df = 172, p-value = 2.669e-07
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes;V = 19381, p-value = 1.053e-15
 
 # secondary all  ***
 mpd.z<-dcFDis_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = 7.7603, df = 278, p-value = 1.623e-13
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes;V = 28620, p-value = 1.601e-11
+
+# primary foragers ***
+mpd.z<-dcFDis_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 14587, p-value = 4.52e-05
 
 # secondary forager,   ***
 mpd.z<-dcFDis_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = 7.1183, df = 190, p-value = 2.181e-11
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 14008, p-value = 2.506e-10
 
-# secondary nester,  no
+# primary nester ***
+mpd.z<-dcFDis_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes;V = 3853, p-value = 2.605e-08
+
+# secondary nester,  ns
 mpd.z<-dcFDis_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = 1.7861, df = 135, p-value = 0.07632
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# no; V = 5018, p-value = 0.4348
 
 #----------------------------------------------------------#
 # Phylogenetic diversity calculations  -----
@@ -502,7 +499,7 @@ t.test(mpd.z, alternative="two.sided")
 # We do this three times: 1. complete community 2. for nesting community 3. for foraging community
 
 # Phylogenetic SES Rao Q
- 
+
 #Rao Q SES
 ses.mpd.phylo.full <- ses.mpd(t.abun_comm, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
 ses.mpd.phylo.nest <- ses.mpd(t.abun_nest, phy.dis, null.model = "taxa.labels", abundance.weighted = T, runs = 999)
@@ -528,36 +525,35 @@ pd_env<- full_join(env,pd_all2, by="TreeN")
 
 ### Is PD different from 0?
 
-# primary all, ns
+# primary all, *
 mpd.z<-pd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = 2.0838, df = 382, p-value = 0.03785
-
-
-# primary foragers *
-mpd.z<-pd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes ; t = 2.4058, df = 283, p-value = 0.01678
-
-# primary nester, ns
-mpd.z<-pd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = -1.6494, df = 172, p-value = 0.1009
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# kinda; V = 41353, p-value = 0.03444
 
 # secondary all, ***
 mpd.z<-pd_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -4.4287, df = 278, p-value = 1.364e-05
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 15012, p-value = 0.000811
+
+# primary foragers ***
+mpd.z<-pd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes ; V = 25364, p-value = 0.000212
 
 # secondary forager, ***
 mpd.z<-pd_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -3.9873, df = 190, p-value = 9.527e-05
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes;V = 7124, p-value = 0.007553
+
+# primary nester, ns
+mpd.z<-pd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# no; V = 7138, p-value = 0.5575
 
 # secondary nester, ns
 mpd.z<-pd_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no; t = 0.98817, df = 135, p-value = 0.3248
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# no; V = 5538, p-value = 0.05607
 
 
 # Here we calculate the decoupled phylogenetic diversity, i.e. Rao Q, according to de Bello et al. (2017)
@@ -598,37 +594,33 @@ dcPDis_env<-dcPDis_env%>% drop_na(Type)
 # Is decoupled PD different from 0?
 # primary all ***
 mpd.z<-dcPDis_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes;t = -11.127, df = 382, p-value < 2.2e-16
-
-stat.test <- dcPDis_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z) %>% wilcox_test(weight ~ 1, mu = 0)
-stat.test
-
-
-# primary foragers, ns
-mpd.z<-dcPDis_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# no ;t = -1.2316, df = 283, p-value = 0.2191
-
-# primary nester ***
-mpd.z<-dcPDis_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -2.7531, df = 172, p-value = 0.006537
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes;V = 28843, p-value = 0.0002565
 
 # secondary all,  ***
 mpd.z<-dcPDis_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -6.2028, df = 278, p-value = 2.003e-09
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 11533, p-value = 3.063e-09
 
-# secondary forager, ,  ***
+# primary foragers, ns
+mpd.z<-dcPDis_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# no ;V = 19023, p-value = 0.3815
+
+# secondary forager, ns
 mpd.z<-dcPDis_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -3.4831, df = 190, p-value = 0.0006151
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# no; V = 8066, p-value = 0.1499
+
+# primary nester, **
+mpd.z<-dcPDis_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 5869, p-value = 0.01207
 
 # secondary nester,  ***
 mpd.z<-dcPDis_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
-t.test(mpd.z, alternative="two.sided")
-# yes; t = -5.5193, df = 135, p-value = 1.681e-07
+wilcox.test(as.numeric(unlist(mpd.z)), mu = 0, alternative = "two.sided")
+# yes; V = 2284, p-value = 2.524e-07
 
 
 #----------------------------------------------------------#
@@ -649,28 +641,36 @@ rownames(PD.mpd)<-PD.mpd[,3]
 FD.PD<-merge(FD.mpd, PD.mpd, by = 'row.names', all = TRUE)
 
 # check for correlation
-corr <- cor.test(FD.PD$RaoQ, FD.PD$RaoQ, method = 'spearman')
+corr <- cor.test(FD.PD$FD.RaoQ, FD.PD$PD.RaoQ, method = 'spearman')
 corr
-# S = 34984785, p-value = 4.437e-13
-# rho = 0.2764684
+# S = 35635267, p-value = 6.162e-12
+# rho = 0.2630156 
 
 # linear model
 model.dc.fd.pd<-lm(FD.RaoQ~PD.RaoQ*Forest, data=FD.PD)
 summary(model.dc.fd.pd)
+#Multiple R-squared:  0.2558,	Adjusted R-squared:  0.2524 
+# F-statistic: 75.41 on 3 and 658 DF,  p-value: < 2.2e-16
 
-# linear model only primary forest
-model.fd.pd.pr<-lm(FD.RaoQ~PD.RaoQ+AntSpRichness.ALL, data=subset(FD.PD, Forest == "Primary"))
+# only primary forest
+# linear model 
+model.fd.pd.pr<-lm(FD.RaoQ~PD.RaoQ, data=subset(FD.PD, Forest == "Primary"))
 summary(model.fd.pd.pr)
+#Multiple R-squared:  0.1445,	Adjusted R-squared:  0.1422 
+#F-statistic: 64.34 on 1 and 381 DF,  p-value: 1.306e-14
+# slope: PD.RaoQ 0.35488 +/- 0.044241, p= 1.31e-14
 
 # linear model only secondary forest
-model.fd.pd.sec<-lm(FD.RaoQ~PD.RaoQ+AntSpRichness.ALL, data=subset(FD.PD, Forest == "Secondary"))
+model.fd.pd.sec<-lm(FD.RaoQ~PD.RaoQ, data=subset(FD.PD, Forest == "Secondary"))
 summary(model.fd.pd.sec)
-
+#Multiple R-squared:  0.2232,	Adjusted R-squared:  0.2204 
+#F-statistic:  79.6 on 1 and 277 DF,  p-value: < 2.2e-16
+# slope: PD.RaoQ 0.26830+/- 0.03007  p< 2e-16
 
 # Spearman rank correlation test for correlation between dcFD and dcPD
 # First assemble SES for PD and FD for same trees
 # for all
-dcFD.mpd<-dcFDis_env %>% filter(Type=="all") %>% na.omit() %>%dplyr::select(mpd.obs, mpd.obs.z, TreeN, Forest, AntSpRichness.ALL)%>% 
+dcFD.mpd<-dcFDis_env %>% filter(Type=="all") %>% na.omit() %>%dplyr::select(mpd.obs, mpd.obs.z, TreeN, Forest)%>% 
   rename(dcFD.RaoQ = mpd.obs.z, dcFD.RaoQ.obs = mpd.obs)
 
 dcPD.mpd<-dcPDis_env %>% filter(Type=="all") %>% na.omit() %>%dplyr::select(mpd.obs, mpd.obs.z, TreeN)%>% 
@@ -684,11 +684,11 @@ dcFD.PD<-merge(dcFD.mpd, dcPD.mpd, by = 'row.names', all = TRUE)
 # check for correlation
 corr <- cor.test(dcFD.PD$dcFD.RaoQ, dcFD.PD$dcPD.RaoQ, method = 'spearman')
 corr
-# S = 34984785, p-value = 4.437e-13
-# rho = 0.2764684
+# S = 72799366, p-value = < 2.2e-16
+# rho = -0.505587
 
 # linear model
-model.dcfd.pd<-lm(dcFD.RaoQ~dcPD.RaoQ*Forest, data=dcFD.PD)
+model.dcfd.pd<-lm(dcFD.RaoQ~dcPD.RaoQ, data=dcFD.PD)
 summary(model.dcfd.pd)
 
 
@@ -738,6 +738,29 @@ forest_f$Type<-"forager"
 
 # get all results into one table
 all_r<-rbind(forest_c,forest_n, forest_f)
+
+#----------------------------------------------------------#
+# Tree size vs. PD and FD -----
+#----------------------------------------------------------#
+# In this part we correlate the tree DBH with PD and FD.
+
+# rename variable so PD.FD can be mergen with environment data
+FD.PD<-FD.PD %>%
+  rename(TreeN = Row.names)
+
+# merge
+env.fd<-merge(env, FD.PD)
+
+# Check distribution of variable. Since its a bit skewed, do a log+1 transformation
+hist(env.fd$DBH)
+hist(log(env.fd$DBH+1))
+
+# make a regression model with PD and FD to check influence of DBH
+env.fd.model<-lm(FD.RaoQ~log(DBH+1) + Forest, data=env.fd)
+env.pd.model<-lm(PD.RaoQ~log(DBH+1) + Forest, data=env.fd)
+
+summary(env.fd.model) # ns for DBH
+summary(env.pd.model) # ns for DBH
 
 #----------------------------------------------------------#
 # FIGURES -----
@@ -802,7 +825,7 @@ mpd_dcFDis
 
 # FD observed decoupled RAO Q
 mpd_dcFDis.obs<-ggplot(dcFDis_env, aes(x=Type, y=mpd.obs, fill=Forest)) +
-  ggtitle("Cecoupled Functional Diversity") +
+  ggtitle("Decoupled Functional Diversity") +
   scale_x_discrete(labels=c("all" = "All", "foragers" = "Visitors",
                             "nest" = "Nesters"))+   
   geom_boxplot()+
@@ -1084,8 +1107,8 @@ corrplot(mydata.cor,
          tl.cex = 1.1, cl.cex = 0.9
 )
 
-#### Main Manuscript
-## Figure 3 
+#### Figures
+## Figure 3/ Figure S2 (if invasives are rmvd.)
 fig3 <- ggarrange(mpd.fd, mpd.pd, corr_fd.pd, mpd_dcFDis, mpd_dcPDis, richness,
                    labels = c("A", "B", "C", "D", "E", "F"),
                    ncol = 3, nrow = 2, common.legend = TRUE, legend = "top")
@@ -1099,13 +1122,151 @@ fig4 <- ggarrange(HL, poly.index, Spines, Scul, Rel.HW, Rel.CL, Rel.ML, Rel.EP, 
 )
 fig4
 
+#----------------------------------------------------------#
+#  mean values -----
+#----------------------------------------------------------#
 
-#### Supplement Figures
+###  mean FD (Rao obs.)
 
+# primary all
+mpd<-mpd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary all
+mpd<-mpd_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary foragers
+mpd<-mpd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary forager
+mpd<-mpd_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary nester
+mpd<-mpd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary nester
+mpd<-mpd_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+### mean FD (Rao SES)
+
+# primary all
+mpd<-mpd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary all
+mpd<-mpd_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary foragers
+mpd<-mpd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary forager
+mpd<-mpd_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary nester
+mpd<-mpd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary nester
+mpd<-mpd_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+#### Extract mean deFD (Rao SES) ####
+
+# primary all
+mpd<-dcFDis_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# secondary all
+mpd<-dcFDis_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary foragers
+mpd<-dcFDis_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary forager
+mpd<-dcFDis_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary nester
+mpd<-dcFDis_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary nester
+mpd<-dcFDis_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+### mean PD (obs.) 
+
+# primary all
+mpd<-pd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary all
+mpd<-pd_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary foragers
+mpd<-pd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary forager
+mpd<-pd_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary nester
+mpd<-pd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary nester
+mpd<-pd_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+### mean PD (SES) 
+
+# primary all
+mpd<-pd_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary all
+mpd<-pd_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary foragers
+mpd<-pd_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary forager
+mpd<-pd_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary nester
+mpd<-pd_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary nester
+mpd<-pd_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+###  mean decoupled PD (SES) 
+
+# primary all
+mpd<-dcPDis_env %>% filter(Forest=="Primary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary all
+mpd<-dcPDis_env %>% filter(Forest=="Secondary" & Type=="all")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary foragers
+mpd<-dcPDis_env %>% filter(Forest=="Primary" & Type=="foragers")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary forager
+mpd<-dcPDis_env %>% filter(Forest=="Secondary" & Type=="foragers")%>% dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+
+# primary nester
+mpd<-dcPDis_env %>% filter(Forest=="Primary" & Type=="nest")%>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
+# secondary nester
+mpd<-dcPDis_env %>% filter(Forest=="Secondary" & Type=="nest") %>%dplyr::select(mpd.obs.z)
+mean(as.numeric(unlist(mpd)), na.rm = T)
 
 ###### REMOVE LATER: Export figures ######
 
-## Plot 4 Francesco
+## Plot 4
 figure_decoupling <- ggarrange(mpd.fd, mpd.pd, corr_fd.pd, mpd_dcFDis, mpd_dcPDis, corr_dcpd,
                            labels = c("A", "B", "C", "D", "E", "F"),
                            ncol = 3, nrow = 2, common.legend = F
@@ -1132,7 +1293,7 @@ dev.off()
 
 # Figure 2: CWMs
 # as tiff
-tiff("figure_3.tiff", units = "in", width = 16, height = 8, res = 150)
+tiff("figure_4.tiff", units = "in", width = 16, height = 8, res = 150)
 fig4
 dev.off()
 

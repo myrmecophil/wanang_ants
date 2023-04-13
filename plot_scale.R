@@ -66,14 +66,14 @@ phylo.matrix <- read.csv("newphylodist.csv", row.names = 1) #outgroups removed
 #remove<-invasiv[,1]
 #phylo.matrix<-phylo.matrix[!rownames(phylo.matrix) %in% remove,!colnames(phylo.matrix) %in% remove ]
 
-## If you activate this line, all subsequent analyses include only native species
+# If you activate this line, all subsequent analyses include only native species
 #traits.raw<-subset(traits.raw, Invasive==2)
 
 ### END OF CODE FoR INVASIVE EXcLUSION ##
 
 # select traits for analysis
 traits.raw <- traits.raw %>%
-  select(SpCode,Caste,HeadWidth:Polymorphism)%>%
+  dplyr::select(SpCode,Caste,HeadWidth:Polymorphism)%>%
   # remove spaces in species code
   mutate(SpCode = str_remove_all(SpCode, " "))
 
@@ -88,8 +88,7 @@ traits_all<-traits.raw %>%
   # define relative measurements by dividing through HeadLength for size related traits
   mutate_at(.funs = list(rel = ~./HeadLength), 
             .vars = vars(HeadWidth, ClypeusLength:InterocularDistance, LegLength, EyeSize))%>%
-  select(SpCode,Caste, Spinosity:EyeSize_rel, HeadLength)
-
+  dplyr::select(SpCode,Caste, Spinosity:EyeSize_rel, HeadLength)
 
 # For polymorphic species: weights for mean trait calculations: 0.8 minor, 0.2 major
 traits_all$weights[traits_all$Caste == "minor"] <- 0.8
@@ -106,7 +105,7 @@ species_traits<-traits_all %>%
                 weighted = ~weighted.mean(., w = weights, na.rm = TRUE)),
     .names = "{col}_{fn}"))%>%
   # we select only traits that are of interest and rename them
-  select(SpCode,Spinosity_mean, Sculpturing_mean,HeadWidth_rel_weighted, ClypeusLength_rel_weighted,MandibleLength_rel_weighted, InterocularDistance_rel_weighted, EyeSize_rel_weighted,LegLength_rel_weighted, HeadLength_weighted)%>% 
+  dplyr::select(SpCode,Spinosity_mean, Sculpturing_mean,HeadWidth_rel_weighted, ClypeusLength_rel_weighted,MandibleLength_rel_weighted, InterocularDistance_rel_weighted, EyeSize_rel_weighted,LegLength_rel_weighted, HeadLength_weighted)%>% 
   rename(Scul = Sculpturing_mean,
          Spines=Spinosity_mean,
          HL = HeadLength_weighted,
@@ -130,11 +129,6 @@ finaltraitmatrix<-as.data.frame(traitmatrix)
 #set species code as rownames
 rownames(finaltraitmatrix) <- finaltraitmatrix[, 1]
 finaltraitmatrix <- finaltraitmatrix[, -c(1)]
-
-# log all traits for better data distribution
-#finaltraitmatrix<-finaltraitmatrix %>%
-#  mutate_at(.funs = ~log(.x+1), 
-#            .vars = vars(Spines:poly.index))
 
 ## load environmental data
 env<- read.csv("env.csv")
@@ -160,7 +154,7 @@ d1 <- decouple(finaltraitmatrix.p, phylo, sqrt_tree = FALSE)
 # all
 comm <- read.csv("comm.csv")
 comm.mat.env<-merge(env, comm, by.x = "TreeN", by.y = "TreeN")
-comm.mat <- comm.mat.env %>% select(Forest, ANOC001:VOLL001) %>% 
+comm.mat <- comm.mat.env %>% dplyr::select(Forest, ANOC001:VOLL001) %>% 
   group_by(Forest) %>%
   summarise_all(funs(sum))
 
@@ -171,7 +165,7 @@ comm.mat <- comm.mat[,-c(1)]
 # nesting only
 nestcomm <- read.csv("nestcomm.csv")
 nestcomm.mat.env<-merge(env, nestcomm, by.x = "TreeN", by.y = "TreeN")
-nestcomm.mat <- nestcomm.mat.env %>% select(Forest, ANON001:VOLL001)%>%
+nestcomm.mat <- nestcomm.mat.env %>% dplyr::select(Forest, ANON001:VOLL001)%>%
   group_by(Forest) %>% 
   summarise_all(funs(sum))
 
@@ -186,7 +180,7 @@ fcomm<-fcomm %>%
     TreeN = X,
   )
 fcomm.mat.env<-merge(env, fcomm, by.x = "TreeN", by.y = "TreeN")
-fcomm.mat <- fcomm.mat.env %>% select(Forest, ANON001:VOLL001)%>%
+fcomm.mat <- fcomm.mat.env %>% dplyr::select(Forest, ANON001:VOLL001)%>%
   group_by(Forest) %>% 
   summarise_all(funs(sum))
 
@@ -219,7 +213,7 @@ dist.ntype <- vegdist(nestcomm.mat, method = "bray") # 0.82
 # 
 fcomm.mat2<-fcomm.mat
 nestcomm.mat2<-nestcomm.mat
-# be
+# 
 row.names(fcomm.mat2)[row.names(fcomm.mat2) == "Primary"] <- "Primary_f"
 row.names(fcomm.mat2)[row.names(fcomm.mat2) == "Secondary"] <- "Secondary_f"
 row.names(nestcomm.mat2)[row.names(fcomm.mat2) == "Primary"] <- "Primary_n"
@@ -255,7 +249,7 @@ rownames(traits.comm.mat) <- traits.comm.mat[,1]
 traits.comm.mat <- traits.comm.mat[,-c(1)]
 #
 com.mat2<-traits.comm.mat%>%
-  select(Primary, Secondary)
+  dplyr::select(Primary, Secondary)
 com.mat2<-t(com.mat2)
 
 ## traits nesters
@@ -264,7 +258,7 @@ rownames(traits.nestcomm.mat) <- traits.nestcomm.mat[,1]
 traits.nestcomm.mat <- traits.nestcomm.mat[,-c(1)]
 #
 nestcom.mat2<-traits.nestcomm.mat%>%
-  select(Primary, Secondary)
+  dplyr::select(Primary, Secondary)
 nestcom.mat2<-t(nestcom.mat2)
 
 ## traits foragers
@@ -273,7 +267,7 @@ rownames(traits.fcomm.mat) <- traits.fcomm.mat[,1]
 traits.fcomm.mat <- traits.fcomm.mat[,-c(1)]
 #
 fcom.mat2<-traits.fcomm.mat%>%
-  select(Primary, Secondary)
+  dplyr::select(Primary, Secondary)
 fcom.mat2<-t(fcom.mat2)
 
 # calculate functional dendrograms
@@ -290,9 +284,9 @@ mpd.comm.p$TreeN<-rownames(mpd.comm.p)
 mpd.nest.p$TreeN<-rownames(mpd.nest.p)
 mpd.forager.p$TreeN<-rownames(mpd.forager.p)
 #
-mpd.comm.p # both ns., primary forest slightly clustered, secondary forest rather overdispersed
+mpd.comm.p # both ns., primary forest slightly clustered, secondary forestoverdispersed
 mpd.nest.p # both ns. primary forest more clustered, secondary forest random (p=0.52)
-mpd.forager.p # # both ns., primary forest slightly clustered, secondary forest rather overdispersed
+mpd.forager.p # # both ns., primary forest slightly clustered, secondary forest  overdispersed
 
 # Same calculations for decoupled trait matrix
 dcFDis<-d1$dcFdist
@@ -312,10 +306,10 @@ dcFDis.forager # ns.
 
 ## 1. whole commmunity CWMs
 traits_comm<-traits.comm.mat %>%
-  select(Spines:poly.index)
+  dplyr::select(Spines:poly.index)
 
 abun_comm<-traits.comm.mat %>%
-  select(Primary, Secondary)
+  dplyr::select(Primary, Secondary)
 
 t.abun_comm<-t(abun_comm)
 
@@ -341,10 +335,10 @@ CWM_comm.p
 
 #### 2. nester CWMs
 traits_nest<-traits.nestcomm.mat %>%
-  select(Spines:poly.index)
+  dplyr::select(Spines:poly.index)
 
 abun_nest<-traits.nestcomm.mat %>%
-  select(Primary, Secondary)
+  dplyr::select(Primary, Secondary)
 
 t.abun_nest<-t(abun_nest)
 
@@ -368,10 +362,10 @@ CWM_nest.p
 
 #### 3. forager CWMs
 traits_fcomm<-traits.fcomm.mat %>%
-  select(Spines:poly.index)
+  dplyr::select(Spines:poly.index)
 
 abun_fcomm<-traits.fcomm.mat %>%
-  select(Primary, Secondary)
+  dplyr::select(Primary, Secondary)
 t.abun_fcomm<-t(abun_fcomm)
 
 
