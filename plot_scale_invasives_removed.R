@@ -9,7 +9,7 @@
 # We analyse the communities on two scales, the tree scale and the plot scale.
 # The plot scale sums up all incidence across the two plots, while the tree scale treats each tree as independent communities.
 
-# This part of the script contains the plot scale analysis.
+# This part of the script contains the plot scale analysis, and removes the invasive species from the data.
 
 ### Associated .csv files:
 # traits.raw.csv: Contains raw trait measurements of ant individuals
@@ -55,6 +55,17 @@ traits.raw =read.csv(file="traits.raw.csv", header=T)
 
 ## load phylogenetic data
 phylo.matrix <- read.csv("newphylodist.csv", row.names = 1) #outgroups removed
+
+# remove invasive species 
+traits.raw =read.csv(file="traits.raw.csv", header=T)
+invasiv<-subset(traits.raw, Invasive==1)
+invasiv <- invasiv %>%
+  dplyr::select(SpCode)%>%
+  mutate(SpCode = str_remove_all(SpCode, " "))
+remove<-invasiv[,1]
+phylo.matrix<-phylo.matrix[!rownames(phylo.matrix) %in% remove,!colnames(phylo.matrix) %in% remove ]
+#
+traits.raw<-subset(traits.raw, Invasive==2)
 
 # select traits for analysis
 traits.raw <- traits.raw %>%
@@ -343,4 +354,4 @@ forest_c
 #----------------------------------------------------------#
 
 # 
-save.image("plot-scale.Rdata")
+save.image("plot-scale_invasives_removed.Rdata")
